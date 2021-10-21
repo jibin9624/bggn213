@@ -1,0 +1,122 @@
+---
+title: "bggn213_HW_Class6"
+author: 'Jibin (PID: A53300326)'
+date: "2021/10/21"
+output: html_document
+---
+
+```{r}
+library(bio3d)
+s1 <- read.pdb("4AKE") # kinase with drug
+s2 <- read.pdb("1AKE") # kinase no drug
+s3 <- read.pdb("1E4Y") # kinase with drug
+s1.chainA <- trim.pdb(s1, chain="A", elety="CA")
+s2.chainA <- trim.pdb(s2, chain="A", elety="CA")
+s3.chainA <- trim.pdb(s1, chain="A", elety="CA")
+s1.b <- s1.chainA$atom$b
+s2.b <- s2.chainA$atom$b
+s3.b <- s3.chainA$atom$b
+plotb3(s1.b, sse=s1.chainA, typ="l", ylab="Bfactor") 
+plotb3(s2.b, sse=s2.chainA, typ="l", ylab="Bfactor") 
+plotb3(s3.b, sse=s3.chainA, typ="l", ylab="Bfactor")
+
+hc <- hclust( dist( rbind(s1.b, s2.b, s3.b) ) )
+plot(hc)
+```
+
+```{r}
+prot_drug_plot <- function(file, chain, elmnt, fctr) {
+  
+  # allows our data to be different colors in the graph
+  plot_colors <- c("cyan", "orange", "magenta")
+  
+  
+  # to iterate through every value of the file vector
+  for (i in 1:length(file)) {
+  s1 <- read.pdb(file[i])
+
+  s1.chain <- trim.pdb(s1, chain = chain, elety = elmnt)
+  
+  atom_df <- s1.chain$atom
+  
+  # the "$" syntax cannot take a variable, so s1.fctr takes in all the atom information and selects an entire column based on the factor input
+  s1.fctr <- atom_df[, fctr] 
+  
+  # creates the first plot
+  if (i == 1) {
+    plotb3(s1.fctr, sse = s1.chain, typ = "l", ylab = paste(toupper(fctr), "factor", sep = ""), col = plot_colors[i])
+    
+    # adds additional plots to first plot
+  } else {
+    lines(s1.fctr, col = plot_colors[i])
+  }
+  }
+  
+  # creates a legend for the graph
+  legend("topright", title = "PDB File Name", file, fill = plot_colors, horiz=TRUE, cex = 0.5, inset = c(0.03, 0.06))
+}
+```
+
+
+```{r}
+library(bio3d)
+s1 <- read.pdb("4AKE") # kinase with drug
+s2 <- read.pdb("1AKE") # kinase no drug
+s3 <- read.pdb("1E4Y") # kinase with drug
+s1.chainA <- trim.pdb(s1, chain="A", elety="CA")
+s2.chainA <- trim.pdb(s2, chain="A", elety="CA")
+s3.chainA <- trim.pdb(s1, chain="A", elety="CA")
+s1.b <- s1.chainA$atom$b
+s2.b <- s2.chainA$atom$b
+s3.b <- s3.chainA$atom$b
+
+plotb3(s1.b, sse=s1.chainA, typ="l", ylab="Bfactor") 
+plotb3(s2.b, sse=s2.chainA, typ="l", ylab="Bfactor") 
+plotb3(s3.b, sse=s3.chainA, typ="l", ylab="Bfactor")
+
+hc <- hclust( dist( rbind(s1.b, s2.b, s3.b) ) )
+plot(hc)
+```
+
+
+```{r}
+Better_plotb3<- function(pdbname, chain, elety) {
+  # to read multiple pdb files
+  for (i in 1:length(file)) {
+  s1 <- read.pdb(file[i])
+
+  s1.chain <- trim.pdb(s1, chain = chain, elety = elety)
+  
+  s1.b<- s1.chain$atom$b
+  
+  # allows our data to be different colors in the graph
+  plot_colors <- c("red", "gray", "bule")
+  
+  # creates the first plot
+  if (i == 1) {
+    plotb3(s1.b, sse = s1.chain, typ = "l", ylab="Bfactor", sep = "", col = plot_colors[i])
+    
+    # adds lines to first plot
+  } else {
+    lines(s1.b, col = plot_colors[i])
+  }
+  }
+  
+  # creates a legend for the graph
+  legend("topright", title = "PDB Name", file, fill = plot_colors, horiz=TRUE, cex = 0.5, inset = c(0.03, 0.06))
+}
+
+
+```
+
+
+```{r}
+pdbname <- c("4AKE", "1AKE", "1E4Y")
+chains <- "A"
+elety <- "CA"
+
+prot_drug_plot(files, chains, elements, factors)
+
+hc <- hclust( dist( rbind(s1.b, s2.b, s3.b) ) )
+plot(hc)
+```
