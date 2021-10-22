@@ -2,10 +2,12 @@
 title: "bggn213_HW_Class6"
 author: 'Jibin (PID: A53300326)'
 date: "2021/10/21"
-output: html_document
+output: pdf_document
 ---
 
-```{r}
+
+## Can you improve this analysis code?
+```{r warning=FALSE}
 library(bio3d)
 s1 <- read.pdb("4AKE") # kinase with drug
 s2 <- read.pdb("1AKE") # kinase no drug
@@ -24,99 +26,93 @@ hc <- hclust( dist( rbind(s1.b, s2.b, s3.b) ) )
 plot(hc)
 ```
 
-```{r}
-prot_drug_plot <- function(file, chain, elmnt, fctr) {
-  
-  # allows our data to be different colors in the graph
-  plot_colors <- c("cyan", "orange", "magenta")
-  
-  
-  # to iterate through every value of the file vector
-  for (i in 1:length(file)) {
-  s1 <- read.pdb(file[i])
+***  
 
-  s1.chain <- trim.pdb(s1, chain = chain, elety = elmnt)
-  
-  atom_df <- s1.chain$atom
-  
-  # the "$" syntax cannot take a variable, so s1.fctr takes in all the atom information and selects an entire column based on the factor input
-  s1.fctr <- atom_df[, fctr] 
-  
-  # creates the first plot
-  if (i == 1) {
-    plotb3(s1.fctr, sse = s1.chain, typ = "l", ylab = paste(toupper(fctr), "factor", sep = ""), col = plot_colors[i])
-    
-    # adds additional plots to first plot
-  } else {
-    lines(s1.fctr, col = plot_colors[i])
-  }
-  }
-  
-  # creates a legend for the graph
-  legend("topright", title = "PDB File Name", file, fill = plot_colors, horiz=TRUE, cex = 0.5, inset = c(0.03, 0.06))
-}
-```
+# A better plot to compare across the different proteins
+
+### plotb3 function is useful for plotting per-residue numeric vectors for a given protein      structure along with a schematic representation of major secondary structure elements.
+
+### trim.pdb () can be used to produce a new smaller PDB object, containing a subset of         atoms, from a given larger PDB object.
+
+### atom is a character matrix containing all atomic coordinate ATOM data, with a row per       ATOM and a column per record type. See below for details of the record type naming          convention (useful for accessing columns).
+
+### The B-factor describes the displacement of the atomic positions from an average (mean)       value (mean-square displacement), which reflects the mobility or flexibility of             various parts of the molecule.
+
 
 
 ```{r}
 library(bio3d)
-s1 <- read.pdb("4AKE") # kinase with drug
-s2 <- read.pdb("1AKE") # kinase no drug
-s3 <- read.pdb("1E4Y") # kinase with drug
-s1.chainA <- trim.pdb(s1, chain="A", elety="CA")
-s2.chainA <- trim.pdb(s2, chain="A", elety="CA")
-s3.chainA <- trim.pdb(s1, chain="A", elety="CA")
-s1.b <- s1.chainA$atom$b
-s2.b <- s2.chainA$atom$b
-s3.b <- s3.chainA$atom$b
 
-plotb3(s1.b, sse=s1.chainA, typ="l", ylab="Bfactor") 
-plotb3(s2.b, sse=s2.chainA, typ="l", ylab="Bfactor") 
-plotb3(s3.b, sse=s3.chainA, typ="l", ylab="Bfactor")
-
-hc <- hclust( dist( rbind(s1.b, s2.b, s3.b) ) )
-plot(hc)
-```
-
-
-```{r}
 Better_plotb3<- function(pdbname, chain, elety) {
-  # to read multiple pdb files
-  for (i in 1:length(file)) {
-  s1 <- read.pdb(file[i])
-
-  s1.chain <- trim.pdb(s1, chain = chain, elety = elety)
+  # assign different colors to each vector
+  plot_colors <- c("red", "gray", "blue")
   
-  s1.b<- s1.chain$atom$b
+  # to read multiple PDB files and extract the "atom" & "b" information
+  for (i in 1:length(pdbname)) {
+  s1 <- read.pdb(pdbname[i])
+  s1.chain_df <- trim.pdb(s1, chain = chain, elety = elety)
+  s1.b<- s1.chain_df$atom$b
   
-  # allows our data to be different colors in the graph
-  plot_colors <- c("red", "gray", "bule")
-  
-  # creates the first plot
+  # plot s1.b
   if (i == 1) {
-    plotb3(s1.b, sse = s1.chain, typ = "l", ylab="Bfactor", sep = "", col = plot_colors[i])
+    plotb3(s1.b, sse = s1.chain_df, typ = "l", ylab="B-factor",
+           col = plot_colors[i])
     
-    # adds lines to first plot
+  # adds additional lines to s1.b
   } else {
     lines(s1.b, col = plot_colors[i])
   }
   }
   
-  # creates a legend for the graph
-  legend("topright", title = "PDB Name", file, fill = plot_colors, horiz=TRUE, cex = 0.5, inset = c(0.03, 0.06))
+  # modify the legend
+  legend("topright", title = "PDB Name", pdbname, fill = plot_colors,
+         horiz=TRUE, cex = 0.5, inset = c(0.03, 0.06))
 }
-
-
 ```
 
-
-```{r}
+```{r warning=FALSE}
 pdbname <- c("4AKE", "1AKE", "1E4Y")
 chains <- "A"
 elety <- "CA"
 
-prot_drug_plot(files, chains, elements, factors)
+Better_plotb3(pdbname, chains, elety)
+```
+***  
+## To remove the secondary structure from the plot
 
-hc <- hclust( dist( rbind(s1.b, s2.b, s3.b) ) )
-plot(hc)
+```{r}
+library(bio3d)
+
+Better_plotb3_2<- function(pdbname, chain, elety) {
+  # assign different colors to each vector
+  plot_colors <- c("red", "gray", "blue")
+  
+  # to read multiple PDB files and extract the "atom" & "b" information
+  for (i in 1:length(pdbname)) {
+  s1 <- read.pdb(pdbname[i])
+  s1.chain_df <- trim.pdb(s1, chain = chain, elety = elety)
+  s1.b<- s1.chain_df$atom$b
+  
+  # plot s1.b
+  if (i == 1) {
+    plotb3(s1.b, typ = "l", ylab="B-factor", col = plot_colors[i])
+    
+  # adds additional lines to s1.b
+  } else {
+    lines(s1.b, col = plot_colors[i])
+  }
+  }
+  
+  # modify the legend
+  legend("topright", title = "PDB Name", pdbname, fill = plot_colors,
+         horiz=TRUE, cex = 0.5, inset = c(0.03, 0.06))
+}
+```
+
+```{r warning=FALSE}
+pdbname <- c("4AKE", "1AKE", "1E4Y")
+chains <- "A"
+elety <- "CA"
+
+Better_plotb3_2(pdbname, chains, elety)
 ```
