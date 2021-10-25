@@ -38,7 +38,10 @@ plot(hc)
 
 ### The B-factor describes the displacement of the atomic positions from an average (mean)       value (mean-square displacement), which reflects the mobility or flexibility of             various parts of the molecule.
 
-
+* Input explanation
+  + "pdbname" is a single element character vector containing the name of the PDB file to be      read, or the four letter PDB identifier for online file access.
+  + "chain" is a character vector of chain identifiers.
+  + "elety" is a character vector of atom names.
 
 ```{r}
 library(bio3d)
