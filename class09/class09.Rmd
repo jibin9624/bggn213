@@ -2,8 +2,12 @@
 title: "class09"
 author: 'Jibin (PID: A53300326)'
 date: "2021/10/27"
-output: html_document
+output: pdf_document
 ---
+
+```{r setup, include=FALSE} 
+knitr::opts_chunk$set(warning = FALSE, message = FALSE) 
+```
 
 # *Exploratory data analysis*
 
@@ -167,7 +171,7 @@ fviz_eig(wisc.pr, addlabels = TRUE)
 > Q9. For the first principal component, what is the component of the loading vector (i.e. wisc.pr$rotation[,1]) for the feature concave.points_mean?
 
 ```{r}
-barplot(wisc.pr$rotation[,1], las=2, mar = rep(10,4))
+barplot(wisc.pr$rotation[,1], las=2, mar=c(10, 3, 3, 20))
 ```
 ### concave.points_mean
 
@@ -241,16 +245,156 @@ table(wisc.km$cluster, wisc.hclust.clusters)
 
 > Q14. How well does k-means separate the two diagnoses? How does it compare to your hclust results?
 
-## It works well, but less precise that hclust.
+## It works well, but less accurate that hclust.
 
 # Combining methods
 
+Here we aim to combine our PCA results with clustering. Essentially, we are going to cluster in "PC", that is cluster on the results `wisc.pr`.
+
+
+```{r}
+plot(wisc.pr$x[,1:2], col= diagnosis)
+```
+
 ## Clustering on PCA results
+
+I will use 4 PCs and `hclust()` and `dist()` as an input.
+
+```{r}
+wisc.pr.hclust <- hclust(dist(wisc.pr$x[,1:4]), method = "ward.D2")
+```
+
+```{r}
+plot(wisc.pr.hclust)
+abline(h=80, col="red")
+```
+Let's find our cluster membership vector by cutting this tree into k=2 groups.
 
 ```{r}
 grps <- cutree(wisc.pr.hclust, k=2)
 table(grps)
 table(grps, diagnosis)
 plot(wisc.pr$x[,1:2], col=grps)
+plot(wisc.pr$x[,1:2], col=diagnosis)
+```
+
+To match things up we can turn our groups into a factor and reorder the levels so cluster 2 comes first and thus gets the first color (black) and cluster 1 gets the second color (red).
+
+```{r}
+g <- as.factor(grps)
+levels(g)
+```
+```{r}
+g <- relevel(g,2)
+levels(g)
+plot(wisc.pr$x[,1:2], col=g)
+plot(wisc.pr$x[,1:2], col=diagnosis)
+```
+
+
+    diagnosis
+grps   B   M
+   1   6 165
+   2 351  47
+
+TP: 165, FP:6
+TN: 351, FN: 47
+
+**Accuracy**, essentially how many did we get correct?
+
+**Sensitivity**: TP/(TP+FN)
+
+**Specificity**: TN/(TN+FN)
+
+```{r}
+# **Accuracy**: (TP+TN)/total cases
+# **Sensitivity**: TP/(TP+FN)
+# **Specificity**: TN/(TN+FN)
+Accuracy <- (165+351)/nrow(wisc.data)*100
+Sensitivity <- (165)/(165+47)*100
+Specificity <- (351)/(351+47)*100
+evulation <- rbind(Accuracy, Sensitivity, Specificity)
+evulation 
+```
+
+## Use the distance along the first 7 PCs for clustering i.e. wisc.pr$x[, 1:7]
+
+```{r}
+wisc.pr.hclust <- hclust(dist(wisc.pr$x[,1:7]), method="ward.D2")
+wisc.pr.hclust.clusters <- cutree(wisc.pr.hclust, k=2)
+table(wisc.pr.hclust.clusters, diagnosis)
+```
+
+```{r}
+# **Accuracy**: (TP+TN)/total cases
+# **Sensitivity**: TP/(TP+FN)
+# **Specificity**: TN/(TN+FN)
+Accuracy <- (188+329)/nrow(wisc.data)*100
+Sensitivity <- (188)/(188+24)*100
+Specificity <- (329)/(329+24)*100
+evulation <- rbind(Accuracy, Sensitivity, Specificity)
+evulation 
+```
+
+> Q15. How well does the newly created model with four clusters separate out the two diagnoses?
+
+It looked good, with higher sensitivity and specificity.
+
+
+> Q16. How well do the k-means and hierarchical clustering models you created in previous sections (i.e. before PCA) do in terms of separating the diagnoses? Again, use the table() function to compare the output of each model (wisc.km$cluster and wisc.hclust.clusters) with the vector containing the actual diagnoses.
+
+```{r}
+table(wisc.km$cluster, diagnosis)
+```
+
+```{r}
+# **Accuracy**: (TP+TN)/total cases
+# **Sensitivity**: TP/(TP+FN)
+# **Specificity**: TN/(TN+FN)
+Accuracy <- (130+356)/nrow(wisc.data)*100
+Sensitivity <- (130)/(130+82)*100
+Specificity <- (356)/(356+82)*100
+evulation <- rbind(Accuracy, Sensitivity, Specificity)
+evulation 
+```
+
+```{r}
+table(wisc.hclust.clusters, diagnosis)
+```
+
+
+```{r}
+# **Accuracy**: (TP+TN)/total cases
+# **Sensitivity**: TP/(TP+FN)
+# **Specificity**: TN/(TN+FN)
+Accuracy <- (165+343)/nrow(wisc.data)*100
+Sensitivity <- (165)/(165+40)*100
+Specificity <- (343)/(343+40)*100
+evulation <- rbind(Accuracy, Sensitivity, Specificity)
+evulation 
+```
+
+> Q17. Which of your analysis procedures resulted in a clustering model with the best specificity? How about sensitivity?
+
+Using the distance along the first 7 PCs for clustering give the best specificity and sensitivity.
+
+# Prediction
+
+We will use the `predict()` function that will take our PCA model from before and new cancer cell data and project
+
+```{r}
+#url <- "new_samples.csv"
+url <- "https://tinyurl.com/new-samples-CSV"
+new <- read.csv(url)
+npc <- predict(wisc.pr, newdata=new)
+npc
+```
+
+Now add these new samples to our PCA plot
+
+```{r}
+plot(wisc.pr$x[,1:2], col=g)
+points(npc[,1], npc[,2], col="blue", pch=16, cex=3)
+text(npc[,1], npc[,2], labels=c(1,2), col="white")
 ```
 
