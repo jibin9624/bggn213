@@ -1,0 +1,150 @@
+---
+title: "Untitled"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(warning = FALSE, message = FALSE)
+```
+
+
+1: Introduction to the RCSB Protein Data Bank (PDB)
+
+#PDB statistics
+
+```{r}
+PDB_file <- read.csv("Data Export Summary.csv")
+```
+
+* Q1: What percentage of structures in the PDB are solved by X-Ray and Electron Microscopy.
+
+```{r}
+XRay <- round(sum(PDB_file$X.ray)/sum(PDB_file$Total)*100, 2)
+
+EM <- round(sum(PDB_file$EM)/sum(PDB_file$Total)*100, 2)
+
+table(XRay, EM)
+```
+
+
+* Q2: What proportion of structures in the PDB are protein?
+
+```{r}
+protein <- round(PDB_file [1,8]/sum(PDB_file$Total)*100, 2)
+protein
+```
+
+* Q3: Type HIV in the PDB website search box on the home page and determine how many HIV-1 protease structures are in the current PDB?
+
+4411.
+
+#The PDB format
+
+
+2. Visualizing the HIV-1 protease structure
+
+> Q4: Water molecules normally have 3 atoms. Why do we see just one atom per water molecule in this structure?
+
+Because the hydrogen atoms are not shown but only the Oxygen is displayed.
+
+> Q5: There is a conserved water molecule in the binding site. Can you identify this water molecule? What residue number does this water molecule have (see note below)?
+
+HOH 308:0
+
+
+> Q6: As you have hopefully observed HIV protease is a homodimer (i.e. it is composed of two identical chains). With the aid of the graphic display and the sequence viewer extension can you identify secondary structure elements that are likely to only form in the dimer rather than the monomer?
+
+
+3. Introduction to Bio3D in R
+
+#Reading PDB file data into R
+
+```{r}
+library(bio3d)
+pdb <- read.pdb("1hsg")
+pdb 
+```
+
+> Q7: How many amino acid residues are there in this pdb object? 
+
+198.
+
+> Q8: Name one of the two non-protein residues? 
+
+HOH.
+
+> Q9: How many protein chains are in this structure? 
+
+2. Chain A and B.
+
+```{r}
+attributes(pdb)
+```
+
+```{r}
+head(pdb$atom)
+```
+
+4. Comparative structure analysis of Adenylate Kinase
+
+> Q10. Which of the packages above is found only on BioConductor and not CRAN? 
+
+msa
+
+> Q11. Which of the above packages is not found on BioConductor or CRAN?: 
+
+bio3d-view
+
+> Q12. True or False? Functions from the devtools package can be used to install packages from GitHub and BitBucket? 
+
+TRUE
+
+
+#Search and retrieve ADK structures
+
+```{r}
+aa <- get.seq("1ake_A")
+aa
+```
+
+
+```{r}
+# Blast or hmmer search 
+#b <- blast.pdb(aa)
+```
+
+```{r}
+# Plot a summary of search results
+#hits <- plot(b)
+```
+```{r}
+# List out some 'top hits'
+#head(hits$pdb.id)
+```
+
+```{r}
+hits <- NULL
+hits$pdb.id <- c('1AKE_A','4X8M_A','6S36_A','6RZE_A','4X8H_A','3HPR_A','1E4V_A','5EJE_A','1E4Y_A','3X2S_A','6HAP_A','6HAM_A','4K46_A','4NP6_A','3GMT_A','4PZL_A')
+```
+
+
+```{r}
+# Download related PDB files
+files <- get.pdb(hits$pdb.id, path="pdbs", split=TRUE, gzip=TRUE)
+```
+
+#Align and superpose structures
+
+```{r}
+# Align related PDBs
+pdbs <- pdbaln(files, fit = TRUE)#, exefile="msa")
+```
+
+```{r}
+# Vector containing PDB codes for figure axis
+ids <- basename.pdb(pdbs$id)
+
+# Draw schematic alignment
+plot(pdbs, labels=ids)
+```
+
