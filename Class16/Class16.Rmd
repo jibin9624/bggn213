@@ -155,7 +155,7 @@ res = res[order(res$pvalue),]
 write.csv(res, "deseq_results.csv")
 ```
 
-#Pathway Analysis
+# 4. Pathway Analysis
 
 ```{r}
 library(pathview)
@@ -189,7 +189,7 @@ keggres = gage(foldchanges, gsets=kegg.sets.hs)
 attributes(keggres)
 ```
 
-# Look at the first few down (less) pathways
+Look at the first few down (less) pathways
 
 
 ```{r}
@@ -223,8 +223,12 @@ pathview(gene.data=foldchanges, pathway.id=keggresids, species="hsa")
 ```
 
 ![](hsa00140.png)
+![](hsa04142.png)
+![](hsa04330.png)
+![](hsa04630.png)
+![](hsa04640.png)
 
-#Gene Ontology (GO)
+# 5. Gene Ontology (GO)
 
 ```{r}
 data(go.sets.hs)
@@ -238,7 +242,7 @@ gobpres = gage(foldchanges, gsets=gobpsets, same.dir=TRUE)
 lapply(gobpres, head)
 ```
 
-# Reactome Analysis
+# 6. Reactome Analysis
 
 First, Using R, output the list of significant genes at the 0.05 level as a plain text file:
 ```{r}
