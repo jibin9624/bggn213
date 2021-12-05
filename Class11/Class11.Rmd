@@ -48,8 +48,7 @@ protein
 Because the hydrogen atoms are not shown but only the Oxygen is displayed.
 
 > Q5: There is a conserved water molecule in the binding site. Can you identify this water molecule? What residue number does this water molecule have (see note below)?
-
-HOH 308:0
+OH 308:0
 
 
 > Q6: As you have hopefully observed HIV protease is a homodimer (i.e. it is composed of two identical chains). With the aid of the graphic display and the sequence viewer extension can you identify secondary structure elements that are likely to only form in the dimer rather than the monomer?

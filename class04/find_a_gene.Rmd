@@ -1,0 +1,74 @@
+---
+title: "Find_A_Gene"
+author: 'Jibin (PID: A53300326)'
+date: "2021/12/2"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+library(bio3d)
+```
+
+
+```{r}
+inputfile <- "muscle-I20211203-040131-0936-98751073-p2m"
+
+aln <- read.fasta( inputfile )
+```
+
+First we will score positional conservation in the alignment with the `conserv()` function.
+
+```{r}
+sim <- conserv(aln)
+sim
+```
+
+Make a quick plot of alignment position vs conservation score.
+
+```{r}
+plot(sim, typ="h", xlab="Alignment position", ylab="Conservation score")
+```
+
+
+
+Let's order our `sim` vector of conservation scores to put the most conserved (highest scoring) first. What positions are the most conserved?
+
+```{r}
+inds <- order(sim, decreasing=TRUE)
+head(sim[inds])
+```
+
+
+```{r}
+library(pheatmap)
+
+ide <- seqidentity(aln)
+pheatmap((1-ide))
+```
+
+```{r}
+aakrp170 <- consensus(aln)
+```
+
+```{r}
+blast.pdb(aakrp170)
+```
+
+```{r}
+hits <- pdb.id <- c('1X88','3ZCW','6TLE')
+anno <- pdb.annotate(hits)
+```
+
+```{r}
+write.csv(anno, 'pdb.annotation')
+```
+
+```{r}
+files <- get.pdb(hits, path="pdbs", split=TRUE, gzip=TRUE)
+```
+
