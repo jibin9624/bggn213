@@ -1,0 +1,69 @@
+---
+title: "First Year Exam (Bioinfo)"
+author: 'Jibin Zhang (PID: A53300326)'
+date: "2022/07/07"
+output:
+ pdf_document:
+  latex_engine: xelatex
+---
+
+```{r setup, include=FALSE} 
+knitr::opts_chunk$set(warning = FALSE, message = FALSE) 
+```
+
+
+# Import data
+
+```{r}
+var <- read.csv( "covid19_variants.csv" )
+head(var)
+```
+
+
+Notice that one of these column is a date column. Working with time and dates get's annoying quickly. We can use the **lubridate** package to make this easy
+
+```{r}
+library("lubridate")
+```
+
+I will make the `as of date` column Data format
+
+```{r}
+var$as_of_date <- ymd(var$date)
+```
+
+# Use the `filter()` function to do Subsetting
+
+```{r}
+library("dplyr")
+```
+
+```{r}
+var_in_ca <- filter(var, variant_name != "Total"& variant_name != "Other")
+```
+
+# Use the `ggplot()` function to plot the data
+
+```{r}
+library("ggplot2")
+```
+
+Set the data to English format
+
+```{r}
+Sys.setlocale(locale = "English")
+```
+
+```{r}
+ggplot(var_in_ca) +
+  aes(as_of_date,
+      percentage, colour = variant_name) +
+  geom_line(size=0.75) +
+  labs(x=NULL, y="Percentage of seqeunced specimens",
+       title="Covid-19 Variants in  California",
+       caption="Data Source: <https://data.chhs.ca.gov/>")+
+  scale_x_date(date_breaks = "1 month", date_labels = " %b %Y")+
+  theme_bw()+
+  theme(axis.text.x= element_text( angle = 45, hjust = 1),
+           legend.title = element_blank())
+```
